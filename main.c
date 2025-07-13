@@ -38,12 +38,57 @@ void init_grid(char* grid, int cols, int rows) {
     }
 }
 
-void clear_screen() {
-#ifdef _WIN32
-    system("cls");
-#else
-    system("clear");
-#endif
+void insert_glider(char* grid, int x, int y, int cols, int rows) {
+    set_grid_cell(grid, x+1, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x+2, y+1, cols, rows, ALIVE);
+    set_grid_cell(grid, x, y+2, cols, rows, ALIVE);
+    set_grid_cell(grid, x+1, y+2, cols, rows, ALIVE);
+    set_grid_cell(grid, x+2, y+2, cols, rows, ALIVE);
+}
+
+void insert_blinker(char* grid, int x, int y, int cols, int rows) {
+    for (int i = -1; i <= 1; i++)
+        set_grid_cell(grid, x + i, y, cols, rows, ALIVE);
+}
+
+void insert_toad(char* grid, int x, int y, int cols, int rows) {
+    set_grid_cell(grid, x, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x+1, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x+2, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x-1, y+1, cols, rows, ALIVE);
+    set_grid_cell(grid, x, y+1, cols, rows, ALIVE);
+    set_grid_cell(grid, x+1, y+1, cols, rows, ALIVE);
+}
+
+void insert_beacon(char* grid, int x, int y, int cols, int rows) {
+    set_grid_cell(grid, x, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x+1, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x, y+1, cols, rows, ALIVE);
+    set_grid_cell(grid, x+1, y+1, cols, rows, ALIVE);
+    set_grid_cell(grid, x+2, y+2, cols, rows, ALIVE);
+    set_grid_cell(grid, x+3, y+2, cols, rows, ALIVE);
+    set_grid_cell(grid, x+2, y+3, cols, rows, ALIVE);
+    set_grid_cell(grid, x+3, y+3, cols, rows, ALIVE);
+}
+
+void insert_lwss(char* grid, int x, int y, int cols, int rows) {
+    set_grid_cell(grid, x+1, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x+4, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x, y+1, cols, rows, ALIVE);
+    set_grid_cell(grid, x, y+2, cols, rows, ALIVE);
+    set_grid_cell(grid, x+4, y+1, cols, rows, ALIVE);
+    set_grid_cell(grid, x+3, y+2, cols, rows, ALIVE);
+    set_grid_cell(grid, x+1, y+3, cols, rows, ALIVE);
+    set_grid_cell(grid, x+2, y+3, cols, rows, ALIVE);
+    set_grid_cell(grid, x+3, y+3, cols, rows, ALIVE);
+    set_grid_cell(grid, x+4, y+3, cols, rows, ALIVE);
+}
+
+void insert_block(char* grid, int x, int y, int cols, int rows) {
+    set_grid_cell(grid, x, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x+1, y, cols, rows, ALIVE);
+    set_grid_cell(grid, x, y+1, cols, rows, ALIVE);
+    set_grid_cell(grid, x+1, y+1, cols, rows, ALIVE);
 }
 
 void get_terminal_size(int* cols, int* rows) {
@@ -69,7 +114,7 @@ void get_terminal_size(int* cols, int* rows) {
 }
 
 void draw_grid(char* grid, int cols, int rows) {
-    clear_screen();
+    printf("\033[H");
     for (int y = 0; y < rows; y++) {
         for (int x = 0; x < cols; x++) {
             printf("%c ", get_cell_state_at(grid, x, y, cols, rows));
@@ -138,11 +183,12 @@ int main() {
     int center_x = columns / 2;
     int center_y = rows / 2;
     
-    set_grid_cell(old_grid, center_x, center_y, columns, rows, ALIVE);
-    set_grid_cell(old_grid, center_x + 1, center_y, columns, rows, ALIVE);
-    set_grid_cell(old_grid, center_x + 2, center_y, columns, rows, ALIVE);
-    set_grid_cell(old_grid, center_x + 2, center_y - 1, columns, rows, ALIVE);
-    set_grid_cell(old_grid, center_x + 1, center_y - 2, columns, rows, ALIVE);
+    insert_glider(old_grid, center_x - 10, center_y - 5, columns, rows);
+    insert_blinker(old_grid, center_x + 5, center_y, columns, rows);
+    insert_toad(old_grid, center_x - 15, center_y + 5, columns, rows);
+    insert_beacon(old_grid, center_x + 10, center_y + 5, columns, rows);
+    insert_lwss(old_grid, center_x - 20, center_y - 10, columns, rows);
+    insert_block(old_grid, center_x + 15, center_y - 6, columns, rows);
    
     printf("Conway's Game of Life - Ctrl+C to exit\n");
     printf("Grid dimensions: %d x %d\n", columns, rows);
@@ -156,7 +202,7 @@ int main() {
         old_grid = new_grid;
         new_grid = temp;
         
-        sleep_ms(500);
+        sleep_ms(200);
     }
    
     free(old_grid);
